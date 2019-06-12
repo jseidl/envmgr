@@ -2,18 +2,22 @@
 Safely and easily manage service API keys to be used as environment variables
 
 ## Usage
-    usage: envmgr.py [-h] [--get BUNDLENAME] [--set NAME VALUE NAME VALUE]
-                   [--clear BUNDLENAME [BUNDLENAME ...]]
-    
+    usage: envmgr.py [-h] [--bundle BUNDLENAME] [--set NAME VALUE NAME VALUE]
+                     [--clear BUNDLENAME [BUNDLENAME ...]]
+                     [--exec [COMMAND [COMMAND ...]]]
+
     Manage API keys and setting environment variables
-    
+
     optional arguments:
       -h, --help            show this help message and exit
-      --get BUNDLENAME      ENV bundle to get
+      --bundle BUNDLENAME, -b BUNDLENAME
+                            ENV bundle to use
       --set NAME VALUE NAME VALUE
-                        sets ENV variable
+                            sets ENV variable
       --clear BUNDLENAME [BUNDLENAME ...]
-                        clear ENV variables from given bundles
+                            clear ENV variables from given bundles
+      --exec [COMMAND [COMMAND ...]], -e [COMMAND [COMMAND ...]]
+                            Command to run
 
 ## Example config
     providers:
