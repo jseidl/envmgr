@@ -1,8 +1,8 @@
-# api-vault
+# envmgr - Environment Variables Manager
 Safely and easily manage service API keys to be used as environment variables
 
 ## Usage
-    usage: apivault.py [-h] [--get BUNDLENAME] [--set NAME VALUE NAME VALUE]
+    usage: envmgr.py [-h] [--get BUNDLENAME] [--set NAME VALUE NAME VALUE]
                    [--clear BUNDLENAME [BUNDLENAME ...]]
     
     Manage API keys and setting environment variables
