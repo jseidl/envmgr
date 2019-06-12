@@ -1,7 +1,11 @@
+#!/usr/bin/env python
+
 import argparse
 import yaml
 import logging
 import sys
+import os
+import subprocess
 
 from configmanager import Config
 from pathlib import Path
@@ -49,7 +53,10 @@ def load_config():
 
 def get_entries(name, entry_set):
 
-    entry_set = entry_set[name]
+    entry_path = name.split('.')
+
+    for level in entry_path:
+        entry_set = entry_set[level]
 
     keys = []
 
@@ -60,9 +67,9 @@ def get_entries(name, entry_set):
         if not entry_value:
             entry_name = ek[0]
         else:
-            entry_name = value
+            entry_name = entry_value
 
-        keys.append(entry_name)
+        keys.append((ek[0], entry_name))
 
     return keys
 
@@ -79,50 +86,73 @@ def initialize():
 
 def get(name, config, backend):
 
-    entries = get_entries(name, config.providers)
+    entries = get_entries(name, config.bundles)
+
+    ret = []
 
     for e in entries:
-        entry_value = backend.get(e)
+        entry_value = backend.get(e[1])
         if entry_value:
-            print("export %s=%s" % (e.upper(), entry_value))
+            ret.append((e[0].upper(), entry_value))
+            #print("export %s=%s" % (e[0].upper(), entry_value))
+
+    return ret
 
 def clear(name, config, backend):
 
-    entries = get_entries(name, config.providers)
+    entries = get_entries(name, config.bundles)
 
     for e in entries:
         print("unset %s" % (e.upper()))
 
+def run_command(args, envs=[]):
+
+    runtime_env = os.environ.copy()
+
+    for e in envs:
+        runtime_env[e[0]] = e[1]
+
+    ret = subprocess.run(args, env=runtime_env)
+
 def main():
 
     parser = argparse.ArgumentParser(description='Manage API keys and setting environment variables')
-    parser.add_argument('--get', metavar='BUNDLENAME', help='ENV bundle to get')
+    parser.add_argument('--bundle', '-b', metavar='BUNDLENAME', help='ENV bundle to use')
     parser.add_argument('--set', metavar='NAME VALUE', help='sets ENV variable', nargs=2)
     parser.add_argument('--clear', metavar='BUNDLENAME', help='clear ENV variables from given bundles', nargs='+')
 
+    parser.add_argument('--exec', '-e', metavar='COMMAND', nargs='*', help='Command to run')
+
     args = parser.parse_args()
+
+    if (args.exec and
+       not args.bundle):
+       parser.error("The 'exec' option requires the 'bundle' option to be specified")
 
     config, backend = initialize()
 
-    if args.get:
-        e = get(args.get, config, backend)
 
     if args.set:
         kn, kv = args.set
         e = backend.set(kn, kv)
 
+    if args.exec:
+
+        bundles = get(args.bundle, config, backend)
+        run_command(args.exec, bundles)
+
     if args.clear:
 
 
         if args.clear[0] == 'all':
-            provider_list = set()
-            for p in config.providers:
-                provider_list.add(p)
+            bundle_list = set()
+            for p in config.bundles:
+                bundle_list.add(p)
         else:
-            provider_list = args.clear
+            bundle_list = args.clear
 
-        for provider in provider_list:
-            e = clear(provider, config, backend)
+        for bundle in bundle_list:
+            e = clear(bundle, config, backend)
 
 
 # Main caller
