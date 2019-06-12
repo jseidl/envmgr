@@ -1,0 +1,5 @@
+configmanager
+msgpack
+pip-chill
+python-gnupg
+pyyaml
