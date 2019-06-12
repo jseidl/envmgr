@@ -20,7 +20,7 @@ Safely and easily manage service API keys to be used as environment variables
                             Command to run
 
 ## Example config
-    providers:
+    bundles:
         cloudflare:
             default:
                 cloudflare_email: cloudflare/email
