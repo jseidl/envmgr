@@ -18,10 +18,10 @@ Safely and easily manage service API keys to be used as environment variables
 ## Example config
     providers:
         cloudflare:
-        cloudflare_email:
-        cloudflare_token:
-    fastly:
-        fastly_api_token:
+            cloudflare_email:
+            cloudflare_token:
+        fastly:
+            fastly_api_token:
 
     encryption:
         plain:
