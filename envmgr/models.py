@@ -1,5 +1,6 @@
 import logging
 
+from getpass import getpass
 from configmanager import Config
 from abc import ABC
 
@@ -55,6 +56,9 @@ class Backend(Component):
     def save(self):
         raise NotImplementedError
 
+    def list(self):
+        raise NotImplementedError
+
 class Encryption(Component):
 
     component_type = 'encryption'
@@ -62,6 +66,10 @@ class Encryption(Component):
 
     def __init__(self, config):
         super().__init__(config)
+
+    def ask_password(self, prompt="Password: "):
+
+        return getpass(prompt="[envmgr] %s" % prompt)
 
     def encrypt(self, data):
         raise NotImplementedError

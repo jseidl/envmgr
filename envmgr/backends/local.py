@@ -50,6 +50,9 @@ class Local(Backend):
         self.vault[key] = value
         self.save()
 
+    def list(self):
+        return self.vault
+
     def save(self):
 
         raw_data = msgpack.packb(self.vault, use_bin_type=True)

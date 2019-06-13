@@ -1,7 +1,6 @@
 import hashlib
 import binascii
 
-from getpass import getpass
 from os import urandom
 from miscreant.aes.siv import SIV
 
@@ -24,7 +23,7 @@ class AES(Encryption):
 
     def setup(self):
 
-        password = getpass()
+        password = self.ask_password()
 
         # Generate Salt & Nonce
         if not self.config['salt']:

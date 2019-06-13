@@ -89,18 +89,29 @@ def run_command(args, envs=[]):
 
 def main():
 
+    class StoreDict(argparse.Action):
+        def __call__(self, parser, namespace, values, option_string=None):
+            kv={}
+            if not isinstance(values, (list,)):
+                values=(values,)
+            for value in values:
+                n, v = value.split('=')
+                kv[n]=v
+            setattr(namespace, self.dest, kv)
+
     parser = argparse.ArgumentParser(description='Manage API keys and setting environment variables')
 
     # ENV vault related options
-    # @FIXME nargs looks wrong.. maybe regular with parameter being NAME=VALUE, then split?
-    parser.add_argument('--set', '-s', metavar='NAME VALUE', help='Sets ENV variable', nargs=2)
+    parser.add_argument('--set', '-s', metavar='ENTRYKEY=ENTRYVALUE', help='Sets ENV variable', action=StoreDict, nargs="+")
+    parser.add_argument('--list', '-l', action='store_true', help='Lists current vault items')
+    parser.add_argument('--delete', '-d', metavar='ENTRYKEY', help='Vault entry key to delete')
 
     # Bundle related options
     parser.add_argument('--bundle', '-b', metavar='BUNDLENAME', help='ENV bundle to use')
     parser.add_argument('--clear', '-c', action='store_true', help='Clear ENV variables from given bundle')
 
     parser.add_argument('--export', '-x', action='store_true', help='Return BASH-compatible export statements')
-    parser.add_argument('--exec', '-e', metavar='COMMAND', nargs='*', help='Execute a command with the environment variables set.')
+    parser.add_argument('--exec', '-e', metavar='COMMAND', nargs=argparse.REMAINDER, help='Execute a command with the environment variables set.')
 
     args = parser.parse_args()
 
@@ -112,8 +123,19 @@ def main():
     config, backend = initialize()
 
     if args.set:
-        kn, kv = args.set
-        return backend.set(kn, kv)
+        for kn, kv in args.set.items():
+            print(kn, kv)
+            #backend.set(kn, kv)
+        return True
+
+    if args.list:
+        all_values = backend.list()
+        for k,v in all_values.items():
+            print(f"{k:}\t\t{v}")
+        return True
+
+    if args.delete:
+        return backend.delete(args.delete)
 
     # Load bundle for bundle-related options
     try:
