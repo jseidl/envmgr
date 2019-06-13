@@ -6,7 +6,6 @@ from miscreant.aes.siv import SIV
 
 from envmgr.models import Encryption
 
-DEFAULT_KEY_SIZE = 32 # bytes, AES-256
 SALT_SIZE = 8 # bytes
 NONCE_SIZE = 16
 PBKDF2_HASH = 'sha256'
