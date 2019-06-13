@@ -1,55 +1,22 @@
 #!/usr/bin/env python
 
 import argparse
-import yaml
 import logging
 import sys
 import os
 import subprocess
 
-from configmanager import Config
-from pathlib import Path
-
 #from envmgr.helpers.loaders import load_backend, load_encryption
+from envmgr.config import load_config
 from envmgr.backends.local import Local
 from envmgr.encryptions.plain import Plain
+from envmgr.encryptions.aes import AES
 from envmgr.constants import ENVMGR_HOME, ENVMGR_CONFIG, ENVMGR_HOME_PERM
 
 LOGGER = logging.getLogger(__name__)
 
 def abort(error_code=-1):
     sys.exit(error_code)
-
-def create_default_config():
-
-    LOGGER.info('Creating default configuraiton file')
-
-def load_config():
-
-    home_path = ENVMGR_HOME
-
-    if not home_path.exists():
-        LOGGER.info('envmgr folder is missing. Trying to create')
-        home_path.mkdir(mode=ENVMGR_HOME_PERM)
-        LOGGER.info('envmgr folder created at %s', ENVMGR_HOME)
-
-    config_path = Path(home_path, ENVMGR_CONFIG)
-
-    if not config_path.exists():
-        LOGGER.info('Configuration file missing, creating default config file')
-        create_default_config()
-
-    try:
-        # Load config
-        with open(config_path, 'r') as c:
-            config_object = yaml.load(c, yaml.SafeLoader)
-            config = Config(config_object)
-
-        return config
-
-    except yaml.YAMLError as e:
-        LOGGER.error("Error loading configuration file: %s", str(e))
-        abort()
 
 def get_entries(name, entry_set):
 
@@ -60,16 +27,19 @@ def get_entries(name, entry_set):
 
     keys = []
 
-    for ek, ev in entry_set.iter_items():
+    for ek, ev in entry_set.items():
     
-        entry_value = ev.get()
+        if isinstance(ev, dict):
+            raise AttributeError("Selected bundle is not a leaf node")
+
+        entry_value = ev
 
         if not entry_value:
-            entry_name = ek[0]
+            entry_name = ek
         else:
             entry_name = entry_value
 
-        keys.append((ek[0], entry_name))
+        keys.append((ek, entry_name))
 
     return keys
 
@@ -79,14 +49,15 @@ def initialize():
     #encryption = load_encryption(config.encryption)
     #backend = load_backend(config.backend, encryption)
 
-    encryption = Plain(config.encryption)
-    backend = Local(config.backend, encryption)
+    encryption = AES(config)
+    #encryption = Plain(config.encryption)
+    backend = Local(config, encryption)
 
     return config, backend
 
 def get(name, config, backend):
 
-    entries = get_entries(name, config.bundles)
+    entries = get_entries(name, config['bundles'])
 
     ret = []
 
@@ -145,7 +116,11 @@ def main():
         return backend.set(kn, kv)
 
     # Load bundle for bundle-related options
-    bundle = get(args.bundle, config, backend)
+    try:
+        bundle = get(args.bundle, config, backend)
+    except AttributeError as e:
+        LOGGER.error("Error selecting bundle: %s", str(e))
+        abort()
 
     if args.exec:
         return run_command(args.exec, bundle)

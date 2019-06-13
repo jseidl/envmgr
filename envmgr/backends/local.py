@@ -20,6 +20,9 @@ class Local(Backend):
 
     def load(self):
 
+        if not self.vault_path.exists():
+            self.save()
+
         try:
 
             with open(self.vault_path, 'rb') as f:
@@ -38,6 +41,10 @@ class Local(Backend):
             return self.vault[key]
 
         return None
+
+    def delete(self, key):
+        self.vault.pop(key, None)
+        self.save()
 
     def set(self, key, value):
         self.vault[key] = value
