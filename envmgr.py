@@ -124,8 +124,7 @@ def main():
 
     if args.set:
         for kn, kv in args.set.items():
-            print(kn, kv)
-            #backend.set(kn, kv)
+            backend.set(kn, kv)
         return True
 
     if args.list:

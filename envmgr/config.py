@@ -9,7 +9,7 @@ LOGGER = logging.getLogger(__name__)
 DEFAULT_CONFIG = {
     'bundles': {},
     'encryption': {
-        'provider': 'plain',
+        'provider': 'aes',
         'options': {}
     },
     'backend': {
