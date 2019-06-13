@@ -20,24 +20,24 @@ Safely and easily manage service API keys to be used as environment variables
                             Command to run
 
 ## Example config
-    bundles:
-        cloudflare:
-            default:
-                cloudflare_email: cloudflare/email
-                cloudflare_token: cloudflare/token
-                cloudflare_org_id: cloudflare/orgid
-        fastly:
-            default:
-                fastly_api_token:
-
-    encryption:
-        plain:
-    
     backend:
-        local:
+      options: {}
+      provider: local
+    bundles:
+      myproject:
+        production:
+          cloudflare_email: cloudflare/email
+          cloudflare_token: cloudflare/token
+          fastly_api_key: fastly/token
+    encryption:
+      provider: aes
+      options:
+        nonce: !!binary |
+          ODRjYTJlZTU0OTE4NDUwNmVjNjI2MGE1NDY5ZjYyNWY=
+        salt: !!binary |
+          YThkYjNmZjdhNmY1ZjU1Mg==
 
 ## To-do's
-* Encryption / AES symmetric
 * Encryption / GPG asymmetric
 * Backend / AWS S3
 * Backend / 1password
