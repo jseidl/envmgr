@@ -94,16 +94,18 @@ def get(name, config, backend):
         entry_value = backend.get(e[1])
         if entry_value:
             ret.append((e[0].upper(), entry_value))
-            #print("export %s=%s" % (e[0].upper(), entry_value))
 
     return ret
 
-def clear(name, config, backend):
+def export(bundle):
 
-    entries = get_entries(name, config.bundles)
+    for env in bundle:
+        print("export %s=\"%s\"" % (env[0],env[1]))
 
-    for e in entries:
-        print("unset %s" % (e.upper()))
+def clear(bundle):
+
+    for e in bundle:
+        print("unset %s" % (e[0].upper()))
 
 def run_command(args, envs=[]):
 
@@ -112,48 +114,47 @@ def run_command(args, envs=[]):
     for e in envs:
         runtime_env[e[0]] = e[1]
 
-    ret = subprocess.run(args, env=runtime_env)
+    ret = subprocess.run(args, env=runtime_env, cwd=os.getcwd())
 
 def main():
 
     parser = argparse.ArgumentParser(description='Manage API keys and setting environment variables')
-    parser.add_argument('--bundle', '-b', metavar='BUNDLENAME', help='ENV bundle to use')
-    parser.add_argument('--set', metavar='NAME VALUE', help='sets ENV variable', nargs=2)
-    parser.add_argument('--clear', metavar='BUNDLENAME', help='clear ENV variables from given bundles', nargs='+')
 
-    parser.add_argument('--exec', '-e', metavar='COMMAND', nargs='*', help='Command to run')
+    # ENV vault related options
+    # @FIXME nargs looks wrong.. maybe regular with parameter being NAME=VALUE, then split?
+    parser.add_argument('--set', '-s', metavar='NAME VALUE', help='Sets ENV variable', nargs=2)
+
+    # Bundle related options
+    parser.add_argument('--bundle', '-b', metavar='BUNDLENAME', help='ENV bundle to use')
+    parser.add_argument('--clear', '-c', action='store_true', help='Clear ENV variables from given bundle')
+
+    parser.add_argument('--export', '-x', action='store_true', help='Return BASH-compatible export statements')
+    parser.add_argument('--exec', '-e', metavar='COMMAND', nargs='*', help='Execute a command with the environment variables set.')
 
     args = parser.parse_args()
 
-    if (args.exec and
+    # Check if bundle option is set both --exec and --export
+    if (any((args.exec, args.export, args.clear)) and
        not args.bundle):
-       parser.error("The 'exec' option requires the 'bundle' option to be specified")
+       parser.error("'bundle' option is required for this action.")
 
     config, backend = initialize()
 
-
     if args.set:
         kn, kv = args.set
-        e = backend.set(kn, kv)
+        return backend.set(kn, kv)
+
+    # Load bundle for bundle-related options
+    bundle = get(args.bundle, config, backend)
 
     if args.exec:
+        return run_command(args.exec, bundle)
 
-        bundles = get(args.bundle, config, backend)
-        run_command(args.exec, bundles)
+    if args.export:
+        return export(bundle)
 
     if args.clear:
-
-
-        if args.clear[0] == 'all':
-            bundle_list = set()
-            for p in config.bundles:
-                bundle_list.add(p)
-        else:
-            bundle_list = args.clear
-
-        for bundle in bundle_list:
-            e = clear(bundle, config, backend)
-
+        return clear(bundle)
 
 # Main caller
 if __name__ == '__main__':
