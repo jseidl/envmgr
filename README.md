@@ -1,6 +1,20 @@
 # envmgr - Environment Variables Manager
 Safely and easily manage service API keys to be used as environment variables
 
+## Security model
+
+### What are we trying to achieve?
+Store API secrets securely either on a local file or remote backend.
+
+### What powers an adversary have to subvert those resources?
+An attacker might have access to the disk or S3 bucket where the vault is laying on, or able to intercept at transit.
+
+### What security properties we wish to achieve?
+We wanna make sure the attacker cannot retrieve your vault's secrets neither at rest nor at transit (when using remote backends)
+
+### Considerations & Current Known Security Issues
+There's no relibable way to erase data from memory on python as strings are immutable. Envmgr does **NOT** protect your secrets from memory snooping. Maybe someday I'll rewrite this in a language that allows that. :)
+
 ## Usage
 
     usage: envmgr [-h] [--set ENTRYKEY=ENTRYVALUE [ENTRYKEY=ENTRYVALUE ...]]
