@@ -1,5 +1,8 @@
-configmanager
+configparser
+future
+hookery
+miscreant
 msgpack
 pip-chill
+pre-commit
 python-gnupg
-pyyaml
