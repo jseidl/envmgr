@@ -1,5 +1,5 @@
+argon2-cffi
 miscreant
-PyYAML
 msgpack
 pip-chill
 pre-commit

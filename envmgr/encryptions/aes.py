@@ -1,15 +1,19 @@
-import hashlib
 import binascii
 
 from os import urandom
 from miscreant.aes.siv import SIV
+from argon2.low_level import hash_secret_raw, Type
 
 from envmgr.models import Encryption
 
 SALT_SIZE = 8  # bytes
 NONCE_SIZE = 16
-PBKDF2_HASH = "sha256"
-PBKDF2_ITERATIONS = 100000
+
+ARGON2_HASH_LEN = 64  # bytes
+ARGON2_TIME_COST = 1  # seconds
+ARGON2_MEMORY_COST = 8  # Kib
+ARGON2_PARALLELISM = 1
+ARGON2_TYPE = Type.ID
 
 
 class AES(Encryption):
@@ -38,7 +42,17 @@ class AES(Encryption):
 
         salt = binascii.unhexlify(self.config["salt"])
         pw_bytes = bytes(password, "utf-8")
-        dk = hashlib.pbkdf2_hmac(PBKDF2_HASH, pw_bytes, salt, PBKDF2_ITERATIONS)
+
+        dk = hash_secret_raw(
+            pw_bytes,
+            salt,
+            time_cost=ARGON2_TIME_COST,
+            memory_cost=ARGON2_MEMORY_COST,
+            parallelism=ARGON2_PARALLELISM,
+            hash_len=ARGON2_HASH_LEN,
+            type=ARGON2_TYPE,
+        )
+
         return dk
 
     def encrypt(self, data):

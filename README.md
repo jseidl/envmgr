@@ -62,12 +62,12 @@ Under construction:
 
 #### Encryptions
 
-The default encryption scheme is `AES SIV` (thanks @evq). If this is your first time running, it will ask you for a password (once) and use that to generate your `nonce` (for AES-SIV encryption and decryption) and `salt` for the PBKDF2 key-derivation. **If you lose your password you WONT be able to recover your vault**
+The default encryption scheme is `AES SIV` (thanks @evq). If this is your first time running, it will ask you for a password (once) and use that to generate your `nonce` (for AES-SIV encryption and decryption) and `salt` for `ARGON2Id` (thanks @Riastradh) used for key-derivation. **If you lose your password you WONT be able to recover your vault**
 
-There's a `plain` encryption scheme which disables encryption. This is useful if your backend provider (password managers, S3 buckets) already provide encryption and you don't want to double encrypt.
+There's a `plain` encryption scheme which disables encryption. This is useful if your backend provider (password managers, S3 buckets) already provide encryption and you don't want to double encrypt. **Be careful when using this.**
 
 Available encryption:
-* AES-SIV (aes)
+* AES-SIV + ARGON2Id (aes)
 
 Under construction:
 * GPG (gpg)
