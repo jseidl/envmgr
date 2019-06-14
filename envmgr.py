@@ -8,17 +8,17 @@ import subprocess
 
 from envmgr.loaders import load_backend, load_encryption
 from envmgr.config import load_config
-from envmgr.backends.local import Local
-from envmgr.constants import ENVMGR_HOME, ENVMGR_CONFIG, ENVMGR_HOME_PERM
 
 LOGGER = logging.getLogger(__name__)
+
 
 def abort(error_code=-1):
     sys.exit(error_code)
 
+
 def get_entries(name, entry_set):
 
-    entry_path = name.split('.')
+    entry_path = name.split(".")
 
     for level in entry_path:
         entry_set = entry_set[level]
@@ -26,7 +26,7 @@ def get_entries(name, entry_set):
     keys = []
 
     for ek, ev in entry_set.items():
-    
+
         if isinstance(ev, dict):
             raise AttributeError("Selected bundle is not a leaf node")
 
@@ -41,19 +41,22 @@ def get_entries(name, entry_set):
 
     return keys
 
+
 def get_encryption(config):
 
-    options = config['encryption']
+    options = config["encryption"]
 
-    encryption_object = load_encryption(options['provider'])
+    encryption_object = load_encryption(options["provider"])
     return encryption_object(config)
+
 
 def get_backend(config, encryption):
 
-    options = config['backend']
+    options = config["backend"]
 
-    backend_object = load_backend(options['provider'])
+    backend_object = load_backend(options["provider"])
     return backend_object(config, encryption)
+
 
 def initialize():
 
@@ -64,9 +67,10 @@ def initialize():
 
     return config, backend
 
+
 def get(name, config, backend):
 
-    entries = get_entries(name, config['bundles'])
+    entries = get_entries(name, config["bundles"])
 
     ret = []
 
@@ -77,15 +81,18 @@ def get(name, config, backend):
 
     return ret
 
+
 def export(bundle):
 
     for env in bundle:
-        print("export %s=\"%s\"" % (env[0],env[1]))
+        print('export %s="%s"' % (env[0], env[1]))
+
 
 def clear(bundle):
 
     for e in bundle:
         print("unset %s" % (e[0].upper()))
+
 
 def run_command(args, envs=[]):
 
@@ -96,46 +103,89 @@ def run_command(args, envs=[]):
 
     ret = subprocess.run(args, env=runtime_env, cwd=os.getcwd())
 
+    return ret
+
+
 def redact(text, amt=0.5):
 
     text_len = len(text)
-    redact = int(text_len*amt)
-    offset = int((text_len-redact)/2)
-    return text[0:offset] + '*' * redact + text[offset+redact:]
+    redact = int(text_len * amt)
+    offset_st = int((text_len - redact) / 2)
+    offset_end = int(offset_st + redact)
+    return text[0:offset_st] + "*" * redact + text[offset_end:]
+
 
 def main():
-
     class StoreDict(argparse.Action):
         def __call__(self, parser, namespace, values, option_string=None):
-            kv={}
+            kv = {}
             if not isinstance(values, (list,)):
-                values=(values,)
+                values = (values,)
             for value in values:
-                n, v = value.split('=')
-                kv[n]=v
+                n, v = value.split("=")
+                kv[n] = v
             setattr(namespace, self.dest, kv)
 
-    parser = argparse.ArgumentParser(description='Manage API keys and setting environment variables')
+    parser = argparse.ArgumentParser(
+        description="Manage API keys and setting environment variables"
+    )
 
     # ENV vault related options
-    parser.add_argument('--set', '-s', metavar='ENTRYKEY=ENTRYVALUE', help='Sets ENV variable', action=StoreDict, nargs="+")
-    parser.add_argument('--list', '-l', action='store_true', help='Lists current vault items, with values redacted.')
-    parser.add_argument('--reveal', '-r', action='store_true', default=False, help='Reveals secret values on --list action.')
-    parser.add_argument('--delete', '-d', metavar='ENTRYKEY', help='Vault entry key to delete')
+    parser.add_argument(
+        "--set",
+        "-s",
+        metavar="ENTRYKEY=ENTRYVALUE",
+        help="Sets ENV variable",
+        action=StoreDict,
+        nargs="+",
+    )
+    parser.add_argument(
+        "--list",
+        "-l",
+        action="store_true",
+        help="Lists current vault items, with values redacted.",
+    )
+    parser.add_argument(
+        "--reveal",
+        "-r",
+        action="store_true",
+        default=False,
+        help="Reveals secret values on --list action.",
+    )
+    parser.add_argument(
+        "--delete", "-d", metavar="ENTRYKEY", help="Vault entry key to delete"
+    )
 
     # Bundle related options
-    parser.add_argument('--bundle', '-b', metavar='BUNDLENAME', help='ENV bundle to use')
-    parser.add_argument('--clear', '-c', action='store_true', help='Clear ENV variables from given bundle')
+    parser.add_argument(
+        "--bundle", "-b", metavar="BUNDLENAME", help="ENV bundle to use"
+    )
+    parser.add_argument(
+        "--clear",
+        "-c",
+        action="store_true",
+        help="Clear ENV variables from given bundle",
+    )
 
-    parser.add_argument('--export', '-x', action='store_true', help='Return BASH-compatible export statements')
-    parser.add_argument('--exec', '-e', metavar='COMMAND', nargs=argparse.REMAINDER, help='Execute a command with the environment variables set.')
+    parser.add_argument(
+        "--export",
+        "-x",
+        action="store_true",
+        help="Return BASH-compatible export statements",
+    )
+    parser.add_argument(
+        "--exec",
+        "-e",
+        metavar="COMMAND",
+        nargs=argparse.REMAINDER,
+        help="Execute a command with the environment variables set.",
+    )
 
     args = parser.parse_args()
 
     # Check if bundle option is set both --exec and --export
-    if (any((args.exec, args.export, args.clear)) and
-       not args.bundle):
-       parser.error("'bundle' option is required for this action.")
+    if any((args.exec, args.export, args.clear)) and not args.bundle:
+        parser.error("'bundle' option is required for this action.")
 
     config, backend = initialize()
 
@@ -146,7 +196,7 @@ def main():
 
     if args.list:
         all_values = backend.list()
-        for k,v in all_values.items():
+        for k, v in all_values.items():
             if args.reveal:
                 val = v
             else:
@@ -173,6 +223,7 @@ def main():
     if args.clear:
         return clear(bundle)
 
+
 # Main caller
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

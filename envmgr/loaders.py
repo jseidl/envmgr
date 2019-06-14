@@ -1,9 +1,9 @@
 import sys
 import inspect
 import importlib
-import pkgutil
 
 from envmgr.constants import COMPONENT_BACKEND, COMPONENT_ENCRYPTION
+
 
 def load_component(component_type, component_name):
 
@@ -24,9 +24,11 @@ def load_component(component_type, component_name):
 
     return getattr(module, class_name)
 
+
 def load_backend(name):
 
     return load_component(COMPONENT_BACKEND, name)
+
 
 def load_encryption(name):
 

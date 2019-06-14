@@ -1,13 +1,13 @@
 import logging
 
 from getpass import getpass
-from configmanager import Config
 from abc import ABC
 
-from envmgr.config import save_config, DEFAULT_CONFIG
+from envmgr.config import save_config
+
 
 class Component(ABC):
-    
+
     name = None
     component_type = None
 
@@ -16,28 +16,30 @@ class Component(ABC):
     default_options = {}
 
     def __init__(self, config):
-        
+
         self.name = self.__class__.__name__.lower()
         self.logger = logging.getLogger(__name__)
 
-        self.config = config[self.component_type]['options']
+        self.config = config[self.component_type]["options"]
 
         if not self.config:
             self.config = self.default_options
 
         self.setup()
 
-        config[self.component_type]['options'] = self.config
+        if self.config != config[self.component_type]["options"]:
+            config[self.component_type]["options"] = self.config
 
-        # Save config after setup
-        save_config(config)
-    
+            # Save config after setup
+            save_config(config)
+
     def setup(self):
         pass
 
+
 class Backend(Component):
 
-    component_type = 'backend'
+    component_type = "backend"
     encryption = None
 
     def __init__(self, config, encryption):
@@ -59,9 +61,10 @@ class Backend(Component):
     def list(self):
         raise NotImplementedError
 
+
 class Encryption(Component):
 
-    component_type = 'encryption'
+    component_type = "encryption"
     engine = None
 
     def __init__(self, config):
