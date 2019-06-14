@@ -26,7 +26,7 @@ class AES(Encryption):
 
         password = self.ask_password()
 
-        # Generate Salt & Nonce
+        # Generate Salt
         if not self.config["salt"]:
             salt = urandom(SALT_SIZE)
             self.config["salt"] = binascii.hexlify(salt)

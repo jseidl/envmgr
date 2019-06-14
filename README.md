@@ -64,6 +64,8 @@ Under construction:
 
 The default encryption scheme is `AES SIV` (thanks @evq). If this is your first time running, it will ask you for a password (once) and use that to generate your `nonce` (for AES-SIV encryption and decryption) and `salt` for `ARGON2Id` (thanks @Riastradh) used for key-derivation. **If you lose your password you WONT be able to recover your vault**
 
+Each entry value on your vault is encrypted by itself, then the whole vault is encrypted again, to protect your entry names.
+
 There's a `plain` encryption scheme which disables encryption. This is useful if your backend provider (password managers, S3 buckets) already provide encryption and you don't want to double encrypt. **Be careful when using this.**
 
 Available encryption:
@@ -86,11 +88,15 @@ Use the `--delete` flag to remove values from the vault
 
     $ envmgr --delete secret_name
 
-#### Listing your secrets (**will reveal values**)
+#### Listing your secrets
 
-Use the `--list` flag to list all secret values on the vault
+Use the `--list` flag to list all secret values partially redacted on the vault
 
     $ envmgr --list
+
+If you wish to see the full values, pass `--reveal` to the above command.
+
+    $ envmgr --list --reveal
 
 #### Using your secrets
 
@@ -127,8 +133,6 @@ And call them by specifying the `--bundle` parameter:
     encryption:
       provider: aes
       options:
-        nonce: !!binary |
-          ODRjYTJlZTU0OTE4NDUwNmVjNjI2MGE1NDY5ZjYyNWY=
         salt: !!binary |
           YThkYjNmZjdhNmY1ZjU1Mg==
 
