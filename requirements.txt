@@ -1,6 +1,5 @@
-future
-hookery
 miscreant
+PyYAML
 msgpack
 pip-chill
 pre-commit
