@@ -1,4 +1,3 @@
-configparser
 future
 hookery
 miscreant
