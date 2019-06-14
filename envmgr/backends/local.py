@@ -1,5 +1,3 @@
-import msgpack
-
 from pathlib import Path
 
 from envmgr.models import Backend
@@ -27,19 +25,25 @@ class Local(Backend):
         try:
 
             with open(self.vault_path, "rb") as f:
-                raw_data = self.encryption.decrypt(f.read())
-                vault_object = msgpack.unpackb(raw_data, raw=False)
+
+                encrypted_vault = self.unserialize(f.read())
+
+                serialized_vault = self.encryption.decrypt(encrypted_vault)
+
+                vault_object = self.unserialize(serialized_vault)
 
                 return vault_object if vault_object else {}
 
         except Exception as e:
+            raise e
             self.logger.error("Failed to load vault: %s", str(e))
 
         return {}
 
     def get(self, key):
+
         if key in self.vault.keys():
-            return self.vault[key]
+            return self.encryption.decrypt(self.vault[key]).decode("utf-8")
 
         return None
 
@@ -48,16 +52,18 @@ class Local(Backend):
         self.save()
 
     def set(self, key, value):
-        self.vault[key] = value
+        self.vault[key] = self.encryption.encrypt(value)
         self.save()
 
     def list(self):
-        return self.vault
+        for item_name, item_value in self.vault.items():
+            yield item_name, self.get(item_name)
 
     def save(self):
 
-        raw_data = msgpack.packb(self.vault, use_bin_type=True)
+        raw_data = self.serialize(self.vault)
         encrypted_data = self.encryption.encrypt(raw_data)
+        encrypted_vault = self.serialize(encrypted_data)
 
         with open(self.vault_path, "wb") as f:
-            f.write(encrypted_data)
+            f.write(encrypted_vault)

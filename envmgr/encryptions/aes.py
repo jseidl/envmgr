@@ -18,7 +18,7 @@ ARGON2_TYPE = Type.ID
 
 class AES(Encryption):
 
-    default_options = {"salt": None, "nonce": None}
+    default_options = {"salt": None}
 
     pubkey = None
 
@@ -30,9 +30,6 @@ class AES(Encryption):
         if not self.config["salt"]:
             salt = urandom(SALT_SIZE)
             self.config["salt"] = binascii.hexlify(salt)
-        if not self.config["nonce"]:
-            nonce = urandom(NONCE_SIZE)
-            self.config["nonce"] = binascii.hexlify(nonce)
 
         # Derive key from password and initialize SIV
         key = self.derive_key(password)
@@ -57,10 +54,17 @@ class AES(Encryption):
 
     def encrypt(self, data):
 
-        nonce = binascii.unhexlify(self.config["nonce"])
-        return self.engine.seal(data, [nonce])
+        nonce = urandom(NONCE_SIZE)
 
-    def decrypt(self, data):
+        if not isinstance(data, bytes):
+            data = bytes(data, "utf-8")
 
-        nonce = binascii.unhexlify(self.config["nonce"])
-        return self.engine.open(data, [nonce])
+        sealed_data = self.engine.seal(data, [nonce])
+
+        return (sealed_data, nonce)
+
+    def decrypt(self, payload):
+
+        data = self.engine.open(payload[0], [payload[1]])
+
+        return data

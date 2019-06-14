@@ -196,7 +196,7 @@ def main():
 
     if args.list:
         all_values = backend.list()
-        for k, v in all_values.items():
+        for k, v in all_values:
             if args.reveal:
                 val = v
             else:

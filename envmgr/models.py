@@ -1,4 +1,5 @@
 import logging
+import msgpack
 
 from getpass import getpass
 from abc import ABC
@@ -60,6 +61,12 @@ class Backend(Component):
 
     def list(self):
         raise NotImplementedError
+
+    def serialize(self, data):
+        return msgpack.packb(data, use_bin_type=True)
+
+    def unserialize(self, data):
+        return msgpack.unpackb(data, raw=False)
 
 
 class Encryption(Component):
