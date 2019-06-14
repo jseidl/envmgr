@@ -6,11 +6,9 @@ import sys
 import os
 import subprocess
 
-#from envmgr.helpers.loaders import load_backend, load_encryption
+from envmgr.loaders import load_backend, load_encryption
 from envmgr.config import load_config
 from envmgr.backends.local import Local
-from envmgr.encryptions.plain import Plain
-from envmgr.encryptions.aes import AES
 from envmgr.constants import ENVMGR_HOME, ENVMGR_CONFIG, ENVMGR_HOME_PERM
 
 LOGGER = logging.getLogger(__name__)
@@ -43,15 +41,26 @@ def get_entries(name, entry_set):
 
     return keys
 
+def get_encryption(config):
+
+    options = config['encryption']
+
+    encryption_object = load_encryption(options['provider'])
+    return encryption_object(config)
+
+def get_backend(config, encryption):
+
+    options = config['backend']
+
+    backend_object = load_backend(options['provider'])
+    return backend_object(config, encryption)
+
 def initialize():
 
     config = load_config()
-    #encryption = load_encryption(config.encryption)
-    #backend = load_backend(config.backend, encryption)
 
-    encryption = AES(config)
-    #encryption = Plain(config.encryption)
-    backend = Local(config, encryption)
+    encryption = get_encryption(config)
+    backend = get_backend(config, encryption)
 
     return config, backend
 
