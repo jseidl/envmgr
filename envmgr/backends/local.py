@@ -27,9 +27,7 @@ class Local(Backend):
             with open(self.vault_path, "rb") as f:
 
                 encrypted_vault = self.unserialize(f.read())
-
                 serialized_vault = self.encryption.decrypt(encrypted_vault)
-
                 vault_object = self.unserialize(serialized_vault)
 
                 return vault_object if vault_object else {}
