@@ -87,6 +87,13 @@ def run_command(args, envs=[]):
 
     ret = subprocess.run(args, env=runtime_env, cwd=os.getcwd())
 
+def redact(text, amt=0.5):
+
+    text_len = len(text)
+    redact = int(text_len*amt)
+    offset = int((text_len-redact)/2)
+    return text[0:offset] + '*' * redact + text[offset+redact:]
+
 def main():
 
     class StoreDict(argparse.Action):
@@ -103,7 +110,8 @@ def main():
 
     # ENV vault related options
     parser.add_argument('--set', '-s', metavar='ENTRYKEY=ENTRYVALUE', help='Sets ENV variable', action=StoreDict, nargs="+")
-    parser.add_argument('--list', '-l', action='store_true', help='Lists current vault items')
+    parser.add_argument('--list', '-l', action='store_true', help='Lists current vault items, with values redacted.')
+    parser.add_argument('--reveal', '-r', action='store_true', default=False, help='Reveals secret values on --list action.')
     parser.add_argument('--delete', '-d', metavar='ENTRYKEY', help='Vault entry key to delete')
 
     # Bundle related options
@@ -130,7 +138,11 @@ def main():
     if args.list:
         all_values = backend.list()
         for k,v in all_values.items():
-            print(f"{k:}\t\t{v}")
+            if args.reveal:
+                val = v
+            else:
+                val = redact(v)
+            print(f"{k:<25}\t\t{val}")
         return True
 
     if args.delete:

@@ -4,7 +4,7 @@ Safely and easily manage service API keys to be used as environment variables
 ## Usage
 
     usage: envmgr [-h] [--set ENTRYKEY=ENTRYVALUE [ENTRYKEY=ENTRYVALUE ...]]
-                  [--list] [--delete ENTRYKEY] [--bundle BUNDLENAME] [--clear]
+                  [--list] [--reveal] [--delete ENTRYKEY] [--bundle BUNDLENAME] [--clear]
                   [--export] [--exec ...]
 
     Manage API keys and setting environment variables
@@ -13,7 +13,8 @@ Safely and easily manage service API keys to be used as environment variables
       -h, --help            show this help message and exit
       --set ENTRYKEY=ENTRYVALUE [ENTRYKEY=ENTRYVALUE ...], -s ENTRYKEY=ENTRYVALUE [ENTRYKEY=ENTRYVALUE ...]
                             Sets ENV variable
-      --list, -l            Lists current vault items
+      --list, -l            Lists current vault items, with values redacted.
+      --reveal, -r          Reveals secret values on --list action.
       --delete ENTRYKEY, -d ENTRYKEY
                             Vault entry key to delete
       --bundle BUNDLENAME, -b BUNDLENAME
